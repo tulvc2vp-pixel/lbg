@@ -1,0 +1,471 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Báo Giảng Môn Tin Học - Lê Văn Tú</title>
+    <!-- Tích hợp thư viện đọc file Excel ngay trên trình duyệt -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1b365d;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f4f6f9;
+            --text-color: #333;
+            --card-bg: #fff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            flex: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 768px) {
+            body { padding: 20px; }
+            .container { padding: 25px; }
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 20px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            h1 { font-size: 24px; margin-bottom: 25px; }
+        }
+
+        /* Khu vực tải File */
+        .upload-section {
+            background: #eef2f7;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px dashed #b2bec3;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        @media (min-width: 480px) {
+            .upload-btn-wrapper { width: auto; }
+        }
+
+        .btn-upload {
+            border: 2px solid var(--secondary-color);
+            color: white;
+            background-color: var(--secondary-color);
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        .btn-upload:hover {
+            background-color: #2980b9;
+        }
+
+        .upload-section input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        #file-name-display {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        /* Bộ lọc tra cứu */
+        .filter-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dcdde1;
+        }
+
+        @media (min-width: 600px) {
+            .filter-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .filter-section {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 15px;
+            outline: none;
+            -webkit-appearance: none; /* Tối ưu hiển thị select trên iOS */
+            background-color: #fff;
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            border-color: var(--secondary-color);
+        }
+
+        /* Responsive Table chuyển sang Card View trên điện thoại */
+        .table-responsive {
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* CSS Biến đổi giao diện bảng thành dạng Card trên Mobile */
+        @media screen and (max-width: 767px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            tr {
+                background: var(--card-bg);
+                border: 1px solid #dcdde1;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                padding: 10px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            }
+            
+            tr:nth-child(even) {
+                background-color: var(--card-bg);
+            }
+            
+            td {
+                border: none;
+                border-bottom: 1px dashed #eee;
+                position: relative;
+                padding-left: 35% !important;
+                text-align: left !important;
+                font-size: 14px;
+                min-height: 24px;
+            }
+            
+            td:last-child {
+                border-bottom: none;
+            }
+            
+            td:before {
+                position: absolute;
+                top: 12px;
+                left: 10px;
+                width: 30%;
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+                color: var(--primary-color);
+            }
+            
+            /* Gán nhãn cột cho chế độ xem điện thoại */
+            td:nth-of-type(1):before { content: "Khối lớp"; }
+            td:nth-of-type(2):before { content: "Tuần học"; }
+            td:nth-of-type(3):before { content: "Tiết PPCT"; }
+            td:nth-of-type(4):before { content: "Bài dạy"; }
+            td:nth-of-type(5):before { content: "Thiết bị"; }
+
+            .badge-khoi {
+                padding: 2px 6px !important;
+                font-size: 11px !important;
+            }
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fbfd;
+        }
+
+        tr:hover {
+            background-color: #f1f2f6;
+        }
+
+        .badge-khoi {
+            background-color: #57606f;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 30px;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Chân trang thông tin tác giả */
+        footer {
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            font-size: 13px;
+            color: #7f8c8d;
+            border-top: 1px solid #dcdde1;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📅 Lịch Báo Giảng Tin Học - Tra Cứu Tự Động</h1>
+
+    <!-- Bước 1: Tải File Excel lên ứng dụng -->
+    <div class="upload-section">
+        <p style="margin: 0 0 12px 0; font-size: 14px; color: #555;">Tải lên file Excel danh sách lịch báo giảng để bắt đầu</p>
+        <div class="upload-btn-wrapper">
+            <button class="btn-upload">📁 Chọn File Excel Lịch Dạy</button>
+            <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="docFileExcel(event)">
+        </div>
+        <div id="file-name-display">Chưa có file nào được nạp dữ liệu</div>
+    </div>
+
+    <!-- Bước 2: Bộ lọc tra cứu nhanh -->
+    <div class="filter-section">
+        <div class="form-group">
+            <label for="filter-khoi">Khối lớp:</label>
+            <select id="filter-khoi" onchange="traCuu()">
+                <option value="">-- Tất cả khối --</option>
+                <option value="6">Khối 6</option>
+                <option value="7">Khối 7</option>
+                <option value="8">Khối 8</option>
+                <option value="9">Khối 9</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="filter-tuan">Tuần học:</label>
+            <select id="filter-tuan" onchange="traCuu()">
+                <option value="">-- Tất cả tuần --</option>
+                <!-- Tự động tạo từ tuần 1 đến 35 -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="search-bai">Tìm tên bài / Từ khóa:</label>
+            <input type="text" id="search-bai" placeholder="Nhập từ khóa tìm kiếm..." oninput="traCuu()">
+        </div>
+    </div>
+
+    <!-- Bước 3: Bảng hiển thị kết quả -->
+    <div class="table-responsive">
+        <table id="main-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Khối</th>
+                    <th style="width: 12%;">Tuần</th>
+                    <th style="width: 12%;">Tiết PPCT</th>
+                    <th>Tên Bài Dạy (Nội dung)</th>
+                    <th style="width: 25%;">Ghi chú / Thiết bị</th>
+                </tr>
+            </thead>
+            <tbody id="data-table-body">
+                <tr>
+                    <td colspan="5" class="text-center" style="color: #7f8c8d; padding: 20px;" id="initial-msg">Vui lòng tải file dữ liệu Excel lên để hiển thị lịch báo giảng.</td>
+                </tr>
+            </tbody>
+        </table>
+        <div id="no-data" class="no-result" style="display: none;">❌ Không tìm thấy bài dạy nào phù hợp với bộ lọc!</div>
+    </div>
+</div>
+
+<!-- Thêm thông tin tác giả ở chân trang -->
+<footer>
+    Tác giả: Lê Văn Tú C2VP
+</footer>
+
+<script>
+    // Biến toàn cục lưu trữ dữ liệu sau khi đọc từ Excel
+    let duLieuBaoGiang = [];
+
+    // Tự động tạo danh sách 35 tuần học vào thanh lọc lựa chọn
+    const selectTuan = document.getElementById('filter-tuan');
+    for (let i = 1; i <= 35; i++) {
+        let option = document.createElement('option');
+        option.value = i;
+        option.textContent = `Tuần ${i}`;
+        selectTuan.appendChild(option);
+    }
+
+    // Hàm xử lý và đọc file Excel khi người dùng upload
+    function docFileExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        document.getElementById('file-name-display').innerText = `📄 Đang chạy file: ${file.name}`;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            // Đọc dữ liệu từ tab có tên là 'Du_lieu_lich_day'
+            const sheetName = 'Du_lieu_lich_day';
+            const worksheet = workbook.Sheets[sheetName];
+
+            if (!worksheet) {
+                alert("Lỗi: Không tìm thấy tab nào tên là 'Du_lieu_lich_day' trong file Excel của bạn!");
+                return;
+            }
+
+            // Chuyển đổi dữ liệu từ Sheet sang định dạng JSON mảng
+            const rawJson = XLSX.utils.sheet_to_json(worksheet);
+
+            // Chuẩn hóa dữ liệu tương thích với bảng hiển thị
+            duLieuBaoGiang = rawJson.map(row => ({
+                khoi: row['Khối'] ? String(row['Khối']).trim() : "",
+                tuan: row['Tuần'] ? parseInt(row['Tuần']) : "",
+                tiet: row['Tiết PPCT'] ? String(row['Tiết PPCT']).trim() : "",
+                tenBai: row['Tên Bài Dạy'] ? String(row['Tên Bài Dạy']).trim() : "",
+                ghiChu: row['Ghi chú / Thiết bị'] ? String(row['Ghi chú / Thiết bị']).trim() : ""
+            })).filter(item => item.tenBai !== ""); // Loại bỏ dòng trống không có tên bài
+
+            // Hiển thị toàn bộ dữ liệu vừa nạp lên bảng
+            hienThiDuLieu(duLieuBaoGiang);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // Hàm hiển thị dữ liệu ra HTML
+    function hienThiDuLieu(danhSach) {
+        const tbody = document.getElementById('data-table-body');
+        const noData = document.getElementById('no-data');
+        tbody.innerHTML = '';
+
+        if (danhSach.length === 0) {
+            noData.style.display = 'block';
+            return;
+        }
+        noData.style.display = 'none';
+
+        danhSach.forEach(item => {
+            const row = `
+                <tr>
+                    <td class="text-center"><span class="badge-khoi">Khối ${item.khoi}</span></td>
+                    <td class="text-center"><b>Tuần ${item.tuan}</b></td>
+                    <td class="text-center"><b>Tiết ${item.tiet}</b></td>
+                    <td><b>${item.tenBai}</b></td>
+                    <td><i style="color: #555;">${item.ghiChu || 'Không có'}</i></td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // Hàm thực hiện tra cứu lọc thời gian thực (Real-time Filter)
+    function traCuu() {
+        // Thay đổi thông báo ban đầu nếu chưa có file
+        const initMsg = document.getElementById('initial-msg');
+        if (duLieuBaoGiang.length === 0) {
+            if (initMsg) initMsg.innerText = "Chưa có dữ liệu. Vui lòng chọn file Excel!";
+            return;
+        }
+
+        const valueKhoi = document.getElementById('filter-khoi').value;
+        const valueTuan = document.getElementById('filter-tuan').value;
+        const valueSearch = document.getElementById('search-bai').value.toLowerCase().trim();
+
+        const ketQuaLoc = duLieuBaoGiang.filter(item => {
+            const matchKhoi = valueKhoi === "" || item.khoi === valueKhoi;
+            const matchTuan = valueTuan === "" || item.tuan == valueTuan;
+            const matchSearch = valueSearch === "" || item.tenBai.toLowerCase().includes(valueSearch) || item.ghiChu.toLowerCase().includes(valueSearch);
+            
+            return matchKhoi && matchTuan && matchSearch;
+        });
+
+        hienThiDuLieu(ketQuaLoc);
+    }
+</script>
+
+</body>
+</html>
