@@ -306,12 +306,10 @@
     <div class="upload-section">
         <p style="margin: 0 0 12px 0; font-size: 14px; color: #555;">Tải lên lịch báo giảng hoặc tải file mẫu chuẩn để chỉnh sửa thông tin</p>
         <div class="button-group">
-            <!-- Nút chọn file từ thiết bị -->
             <div class="upload-btn-wrapper">
                 <button class="btn-upload">📁 Chọn File Excel Lịch Dạy</button>
                 <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="docFileExcel(event)">
             </div>
-            <!-- Nút tải file cấu trúc mẫu -->
             <button class="btn-download-template" onclick="taiFileMau()">📥 Tải File Excel Mẫu</button>
         </div>
         <div id="file-name-display">Chưa có dữ liệu nào được nạp</div>
@@ -381,9 +379,15 @@
         selectTuan.appendChild(option);
     }
 
-    // Hàm tạo và tự động tải file Excel mẫu trực tiếp bằng mã nguồn JS (SheetJS)
+    // HÀM MỚI: Sửa lỗi không tải được file trên điện thoại bằng phương pháp sinh Blob dữ liệu ẩn
+    function s2ab(s) {
+        const buf = new ArrayBuffer(s.length);
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    }
+
     function taiFileMau() {
-        // Tạo cấu trúc dữ liệu cho tab hướng dẫn
         const wsInstData = [
             ["HƯỚNG DẪN NHẬP DỮ LIỆU LỊCH BÁO GIẢNG TIN HỌC"],
             [],
@@ -395,7 +399,6 @@
             ["6. Sau khi nhập xong dữ liệu, lưu file Excel lại và nạp vào ứng dụng web."]
         ];
 
-        // Tạo cấu trúc dữ liệu mẫu cho tab lịch dạy
         const wsLichDayData = [
             ["Khối", "Tuần", "Tiết PPCT", "Tên Bài Dạy", "Ghi chú / Thiết bị"],
             [6, 1, "1", "Bài 1: Thông tin và thu nhận thông tin", "Phòng máy / Máy chiếu"],
@@ -415,8 +418,22 @@
         XLSX.utils.book_append_sheet(wb, wsInst, "Huong_dan_cau_truc");
         XLSX.utils.book_append_sheet(wb, wsLichDay, "Du_lieu_lich_day");
 
-        // Xuất file tải về
-        XLSX.writeFile(wb, "Mau_Lich_Bao_Giang_Tin_Hoc.xlsx");
+        // Biến đổi cấu trúc tệp tin thành dạng chuỗi Nhị phân để tương thích Mobile
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+        const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+        
+        // Tạo liên kết tải ảo vượt tường lửa bảo mật của điện thoại
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+        a.href = url;
+        a.download = "Mau_Lich_Bao_Giang_Tin_Hoc.xlsx";
+        a.click(); // Kích hoạt click tải về tự động
+        
+        // Giải phóng bộ nhớ tạm sau khi tải xong
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     }
 
     // Hàm đọc file Excel khi người dùng nạp lên hệ thống
