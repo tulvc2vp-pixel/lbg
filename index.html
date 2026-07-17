@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Báo Giảng Môn Tin Học - Lê Văn Tú</title>
+    <title>Hệ Thống PPCT - Lớp 6,7,8,9</title>
     <!-- Tích hợp thư viện đọc file Excel ngay trên trình duyệt -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -85,17 +85,6 @@
             }
         }
 
-        .upload-btn-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-
-        @media (min-width: 650px) {
-            .upload-btn-wrapper { width: auto; }
-        }
-
         .btn-upload, .btn-download-template, .btn-clear-data {
             color: white;
             padding: 12px 20px;
@@ -140,30 +129,56 @@
             background-color: #c0392b;
         }
 
-        @media (min-width: 650px) {
-            .btn-clear-data { width: auto; }
+        /* Khu vực chọn Môn học dạng thẻ Tab bấm trực tiếp */
+        .mon-hoc-container {
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dcdde1;
         }
 
-        .upload-section input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-
-        #file-name-display {
-            margin-top: 12px;
+        .mon-hoc-title {
             font-weight: bold;
-            color: #2c3e50;
-            font-size: 14px;
-            word-break: break-all;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 15px;
+            display: block;
         }
 
-        /* Bộ lọc tra cứu */
+        .mon-hoc-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tab-item {
+            padding: 10px 14px;
+            background-color: #f1f2f6;
+            border: 1px solid #ced6e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2f3542;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .tab-item:hover {
+            background-color: #dfe4ea;
+            border-color: #a4b0be;
+        }
+
+        .tab-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(27,54,93,0.3);
+        }
+
+        /* Bộ lọc phụ (Khối, Tuần, Từ khóa) */
         .filter-section {
             display: grid;
             grid-template-columns: 1fr;
@@ -176,15 +191,7 @@
         }
 
         @media (min-width: 600px) {
-            .filter-section {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (min-width: 900px) {
-            .filter-section {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .filter-section { grid-template-columns: repeat(3, 1fr); }
         }
 
         .form-group {
@@ -205,12 +212,7 @@
             border-radius: 5px;
             font-size: 15px;
             outline: none;
-            -webkit-appearance: none;
             background-color: #fff;
-        }
-
-        .form-group select:focus, .form-group input:focus {
-            border-color: var(--secondary-color);
         }
 
         /* Responsive Table sang Card View trên điện thoại */
@@ -313,24 +315,42 @@
 <body>
 
 <div class="container">
-    <h1>📅 Lịch Báo Giảng Tin Học - Tra Cứu Tự Động</h1>
+    <h1>📅 Hệ Thống Quản Lý Phân Phối Chương Trình THCS Toàn Diện</h1>
 
     <!-- Khung tải lên và tải mẫu file Excel -->
     <div class="upload-section">
-        <p style="margin: 0 0 12px 0; font-size: 14px; color: #555;">Tải lên lịch báo giảng hoặc tải file mẫu chuẩn để chỉnh sửa thông tin</p>
+        <p style="margin: 0 0 12px 0; font-size: 14px; color: #555;">Tải lên file Excel tổng hợp lịch báo giảng hoặc tải file mẫu chuẩn hệ thống bên dưới</p>
         <div class="button-group">
-            <div class="upload-btn-wrapper">
-                <button class="btn-upload">📁 Chọn File Excel Lịch Dạy</button>
-                <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="docFileExcel(event)">
+            <div class="upload-btn-wrapper" style="position: relative; overflow: hidden; display: inline-block; width: 100%; max-width: 250px;">
+                <button class="btn-upload" style="width: 100%;">📁 Chọn File Excel Lịch Dạy</button>
+                <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="docFileExcel(event)" style="font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;">
             </div>
-            <button class="btn-download-template" onclick="taiFileMau()">📥 Tải File Excel Mẫu</button>
-            <!-- Nút xóa dữ liệu đã lưu -->
-            <button class="btn-clear-data" id="btn-clear" onclick="xoaDuLieuDaLuu()" style="display: none;">🗑️ Xóa dữ liệu cũ</button>
+            <button class="btn-download-template" onclick="taiFileMau()">📥 Tải File Excel Mẫu Đầy Đủ Môn</button>
+            <button class="btn-clear-data" id="btn-clear" onclick="xoaDuLieuDaLuu()" style="display: none; width: auto;">🗑️ Xóa dữ liệu cũ</button>
         </div>
         <div id="file-name-display">Chưa có dữ liệu nào được nạp</div>
     </div>
 
-    <!-- Bộ lọc tra cứu nhanh -->
+    <!-- KHU VỰC THẺ TAB CHỌN MÔN HỌC TRỰC QUAN -->
+    <div class="mon-hoc-container">
+        <span class="mon-hoc-title">📚 Chọn Môn Học (Bấm trực tiếp để chuyển môn):</span>
+        <div class="mon-hoc-tabs" id="mon-hoc-tabs-list">
+            <div class="tab-item" data-value="Ngữ văn">📝 Ngữ văn</div>
+            <div class="tab-item" data-value="Toán">📐 Toán</div>
+            <div class="tab-item" data-value="Ngoại ngữ 1">🔤 Ngoại ngữ 1</div>
+            <div class="tab-item" data-value="Giáo dục công dân">⚖️ GDCD</div>
+            <div class="tab-item" data-value="Lịch sử và Địa lí">🗺️ Lịch sử & Địa lí</div>
+            <div class="tab-item" data-value="Khoa học tự nhiên">🔬 KHTN</div>
+            <div class="tab-item" data-value="Công nghệ">🛠️ Công nghệ</div>
+            <div class="tab-item active" data-value="Tin học">💻 Tin học</div>
+            <div class="tab-item" data-value="Giáo dục thể chất">⚽ GD Thể chất</div>
+            <div class="tab-item" data-value="Nghệ thuật">🎨 Nghệ thuật</div>
+            <div class="tab-item" data-value="Hoạt động trải nghiệm, hướng nghiệp">🌱 HĐ Trải nghiệm, hướng nghiệp</div>
+            <div class="tab-item" data-value="Nội dung giáo dục của địa phương">🏡 GD Địa phương</div>
+        </div>
+    </div>
+
+    <!-- Bộ lọc tra cứu phụ -->
     <div class="filter-section">
         <div class="form-group">
             <label for="filter-khoi">Khối lớp:</label>
@@ -351,12 +371,12 @@
         </div>
 
         <div class="form-group">
-            <label for="search-bai">Tìm tên bài / Từ khóa:</label>
+            <label for="search-bai">Tìm bài dạy / Từ khóa:</label>
             <input type="text" id="search-bai" placeholder="Nhập từ khóa tìm kiếm..." oninput="traCuu()">
         </div>
     </div>
 
-    <!-- Bảng kết quả -->
+    <!-- Bảng kết quả lịch dạy -->
     <div class="table-responsive">
         <table id="main-table">
             <thead>
@@ -370,11 +390,11 @@
             </thead>
             <tbody id="data-table-body">
                 <tr>
-                    <td colspan="5" class="text-center" style="color: #7f8c8d; padding: 20px;" id="initial-msg">Vui lòng tải file dữ liệu Excel lên hoặc sử dụng nút "Tải File Excel Mẫu" để xem cấu trúc chuẩn.</td>
+                    <td colspan="5" class="text-center" style="color: #7f8c8d; padding: 20px;" id="initial-msg">Vui lòng tải file dữ liệu Excel lên hoặc sử dụng nút mẫu để xem cấu trúc hệ thống.</td>
                 </tr>
             </tbody>
         </table>
-        <div id="no-data" class="no-result" style="display: none;">❌ Không tìm thấy bài dạy nào phù hợp với bộ lọc!</div>
+        <div id="no-data" class="no-result" style="display: none;">❌ Không tìm thấy bài dạy nào phù hợp với bộ lọc hiện tại!</div>
     </div>
 </div>
 
@@ -383,7 +403,49 @@
 </footer>
 
 <script>
-    let duLieuBaoGiang = [];
+    // Khởi tạo biến môn học hiện tại
+    let monDangChon = "Tin học";
+
+    // Khởi tạo kho lưu trữ động chứa dữ liệu của tất cả các môn
+    let khoDuLieuMonHoc = {
+        "Ngữ văn": [], "Toán": [], "Ngoại ngữ 1": [], "Giáo dục công dân": [],
+        "Lịch sử và Địa lí": [], "Khoa học tự nhiên": [], "Công nghệ": [], "Tin học": [],
+        "Giáo dục thể chất": [], "Nghệ thuật": [], "Hoạt động trải nghiệm, hướng nghiệp": [],
+        "Nội dung giáo dục của địa phương": []
+    };
+
+    // ĐÃ CẬP NHẬT: Thêm các biến thể không dấu, gạch dưới viết tắt để map chuẩn xác 100%
+    const banDoTenTab = {
+        "nguvan": "Ngữ văn", "ngữvăn": "Ngữ văn",
+        "toan": "Toán", "toán": "Toán",
+        "ngoaingu1": "Ngoại ngữ 1", "ngoạingữ1": "Ngoại ngữ 1",
+        "giaoduccongdan": "Giáo dục công dân", "gdcd": "Giáo dục công dân", "giáodụccôngdân": "Giáo dục công dân",
+        
+        // Sửa lỗi Lịch sử và Địa lí (Nhận diện thêm tab mẫu "lichsudiali" hoặc "lsdl")
+        "lichsuvadiali": "Lịch sử và Địa lí", "lịchsửvàđịalí": "Lịch sử và Địa lí", "lichsudiali": "Lịch sử và Địa lí", "lsdl": "Lịch sử và Địa lí",
+        
+        "khoahoctunhien": "Khoa học tự nhiên", "khtn": "Khoa học tự nhiên", "khoahọctựnhiên": "Khoa học tự nhiên",
+        "congnghe": "Công nghệ", "côngnghệ": "Công nghệ",
+        "tinhoc": "Tin học", "tinhọc": "Tin học",
+        "giaoducthechat": "Giáo dục thể chất", "gdtc": "Giáo dục thể chất", "giáodụcthểchất": "Giáo dục thể chất",
+        "nghethuat": "Nghệ thuật", "nghệthuật": "Nghệ thuật",
+        
+        // Sửa lỗi Hoạt động trải nghiệm (Nhận diện thêm tab mẫu "trainghiemhuongnghiep" hoặc "hdtn")
+        "hoatdongtrainghiemhuongnghiep": "Hoạt động trải nghiệm, hướng nghiệp", "trainghiemhuongnghiep": "Hoạt động trải nghiệm, hướng nghiệp", "hdtn": "Hoạt động trải nghiệm, hướng nghiệp", "hoạtđộngtrảinghiệmhướngnghiệp": "Hoạt động trải nghiệm, hướng nghiệp",
+        
+        // Sửa lỗi GD Địa phương (Nhận diện thêm tab mẫu "giaoducdiaphuong" hoặc "gddp")
+        "noidunggiaoduccuadiaphuong": "Nội dung giáo dục của địa phương", "giaoducdiaphuong": "Nội dung giáo dục của địa phương", "gddp": "Nội dung giáo dục của địa phương", "nộidunggiáodụccủađịaphương": "Nội dung giáo dục của địa phương"
+    };
+
+    // Sự kiện click chuyển đổi thẻ Tab môn học trực tiếp
+    document.querySelectorAll('.tab-item').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            monDangChon = this.getAttribute('data-value');
+            traCuu(); // Thực hiện tìm kiếm/lọc ngay sau khi đổi môn
+        });
+    });
 
     // Tự động tạo danh sách 35 tuần học
     const selectTuan = document.getElementById('filter-tuan');
@@ -394,16 +456,16 @@
         selectTuan.appendChild(option);
     }
 
-    // NÂNG CẤP: Tự động kiểm tra xem thiết bị có lưu sẵn dữ liệu cũ không khi vừa mở ứng dụng lên
+    // Tự động kiểm tra và phục hồi dữ liệu từ LocalStorage khi khởi động app
     window.onload = function() {
-        const duLieuLuuTru = localStorage.getItem('duLieuBaoGiang_TinHoc');
-        const tenFileLuuTru = localStorage.getItem('tenFileBaoGiang_TinHoc');
+        const duLieuLuuTru = localStorage.getItem('khoDuLieuMutiMon_GDPT2018');
+        const tenFileLuuTru = localStorage.getItem('tenFileMutiMon_GDPT2018');
         
         if (duLieuLuuTru) {
-            duLieuBaoGiang = JSON.parse(duLieuLuuTru);
-            document.getElementById('file-name-display').innerHTML = `🔄 Đang hiển thị lịch cũ: <b>${tenFileLuuTru || 'Lịch_đã_lưu.xlsx'}</b>`;
+            khoDuLieuMonHoc = JSON.parse(duLieuLuuTru);
+            document.getElementById('file-name-display').innerHTML = `🔄 Đang chạy dữ liệu cũ: <b>${tenFileLuuTru || 'Lich_Bao_Giang_He_Thong.xlsx'}</b>`;
             document.getElementById('btn-clear').style.display = 'inline-flex';
-            hienThiDuLieu(duLieuBaoGiang);
+            traCuu();
         }
     };
 
@@ -414,36 +476,42 @@
         return buf;
     }
 
+    // Thiết kế cấu trúc file mẫu đa tab, hệ thống tự động nhận diện tất cả 12 môn
     function taiFileMau() {
-        const wsInstData = [
-            ["HƯỚNG DẪN NHẬP DỮ LIỆU LỊCH BÁO GIẢNG TIN HỌC"],
-            [],
-            ["1. Ứng dụng sẽ đọc dữ liệu từ tab 'Du_lieu_lich_day'. Bạn vui lòng nhập đúng cấu trúc cột ở tab đó."],
-            ["2. Không thay đổi tên các tiêu đề cột (Khối, Tuần, Tiết PPCT, Tên Bài Dạy, Ghi chú / Thiết bị)."],
-            ["3. Cột 'Khối' chỉ nhập số (ví dụ: 6, 7, 8, 9)."],
-            ["4. Cột 'Tuần' chỉ nhập số từ 1 đến 35."],
-            ["5. Cột 'Tiết PPCT' nhập số thứ tự tiết theo phân phối chương trình."],
-            ["6. Sau khi nhập xong dữ liệu, lưu file Excel lại và nạp vào ứng dụng web."]
-        ];
-
-        const wsLichDayData = [
-            ["Khối", "Tuần", "Tiết PPCT", "Tên Bài Dạy", "Ghi chú / Thiết bị"],
-            [6, 1, "1", "Bài 1: Thông tin và thu nhận thông tin", "Phòng máy / Máy chiếu"],
-            [6, 1, "2", "Bài 1: Thông tin và thu nhận thông tin (Tiếp theo)", "Phiếu học tập"],
-            [6, 2, "3", "Bài 2: Lưu trữ và trao đổi thông tin", "Máy chiếu"],
-            [6, 2, "4", "Bài 3: Máy tính trong hoạt động thông tin", "Thực hành phòng máy"],
-            [7, 1, "1", "Bài 1: Thiết bị vào ra cơ bản", "Mô hình thiết bị"],
-            [7, 1, "2", "Bài 2: Hệ điều hành và phần mềm ứng dụng", "Phòng máy"],
-            [8, 1, "1", "Bài 1: Lịch sử máy tính", "Tranh ảnh lịch sử"],
-            [9, 1, "1", "Bài 1: Khái niệm thế giới ảo và số hóa", "Máy chiếu"]
-        ];
-
         const wb = XLSX.utils.book_new();
-        const wsInst = XLSX.utils.aoa_to_sheet(wsInstData);
-        const wsLichDay = XLSX.utils.aoa_to_sheet(wsLichDayData);
 
-        XLSX.utils.book_append_sheet(wb, wsInst, "Huong_dan_cau_truc");
-        XLSX.utils.book_append_sheet(wb, wsLichDay, "Du_lieu_lich_day");
+        const wsInstData = [
+            ["HƯỚNG DẪN THIẾT LẬP FILE LỊCH BÁO GIẢNG TỔNG HỢP TOÀN TRƯỜNG"],
+            [],
+            ["1. Mỗi môn học được phân tách riêng biệt thành một Tab Excel."],
+            ["2. Tên các Tab có thể đặt đúng theo danh sách viết gọn bên dưới hệ thống sẽ tự động nhận diện."],
+            ["3. Thầy/Cô chỉ cần điền thông tin vào các môn mình phụ trách, các môn không dạy có thể để trống."],
+            ["4. Giữ nguyên tiêu đề các cột: Khối, Tuần, Tiết PPCT, Tên Bài Dạy, Ghi chú / Thiết bị."],
+            ["5. Định dạng cột 'Khối' và 'Tuần' phải nhập bằng giá trị Số."]
+        ];
+        const wsInst = XLSX.utils.aoa_to_sheet(wsInstData);
+        XLSX.utils.book_append_sheet(wb, wsInst, "Huong_dan_chung");
+
+        // Dữ liệu ban đầu định hình mẫu cho tất cả các môn
+        const khungDuLieuMau = [
+            ["Khối", "Tuần", "Tiết PPCT", "Tên Bài Dạy", "Ghi chú / Thiết bị"],
+            [6, 1, "1", "Bài mẫu số 01: Nội dung bài học đầu tiên", "Thiết bị mẫu / Tranh ảnh"],
+            [7, 1, "1", "Bài mẫu số 01: Nội dung bài giảng học kì I", "Máy chiếu / Phòng học"],
+            [8, 2, "2", "Bài mẫu số 02: Tên bài dạy thực hành", "Phiếu bài tập số 1"],
+            [9, 2, "2", "Bài mẫu số 02: Ôn tập kiến thức trọng tâm", "Không có"]
+        ];
+
+        // Danh sách tên Tab viết gọn tương ứng cho tệp tin Excel mẫu
+        const danhSachTabExcel = [
+            "Ngu_van", "Toan", "Ngoai_ngu_1", "GDCD", "Lich_su_Dia_li", 
+            "KHTN", "Cong_nghe", "Tin_hoc", "GDTC", "Nghe_thuat", 
+            "Trai_nghiem_huong_nghiep", "Giao_duc_dia_phuong"
+        ];
+
+        danhSachTabExcel.forEach(tenTab => {
+            const ws = XLSX.utils.aoa_to_sheet(khungDuLieuMau);
+            XLSX.utils.book_append_sheet(wb, ws, tenTab);
+        });
 
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
         const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
@@ -453,72 +521,91 @@
         document.body.appendChild(a);
         a.style = "display: none";
         a.href = url;
-        a.download = "Mau_Lich_Bao_Giang_Tin_Hoc.xlsx";
+        a.download = "Mau_Lich_Bao_Giang_Cac_Mon_THCS.xlsx";
         a.click();
         
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
     }
 
-    // Hàm đọc file Excel và tự động LƯU vào bộ nhớ LocalStorage
+    // Đọc dữ liệu đa môn từ file Excel được tải lên
     function docFileExcel(event) {
         const file = event.target.files[0];
         if (!file) return;
 
-        document.getElementById('file-name-display').innerText = `📄 Đang nạp dữ liệu: ${file.name}`;
+        document.getElementById('file-name-display').innerText = `📄 Đang xử lý file dữ liệu: ${file.name}`;
 
         const reader = new FileReader();
         reader.onload = function(e) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
-            const sheetName = 'Du_lieu_lich_day';
-            const worksheet = workbook.Sheets[sheetName];
+            
+            // Khởi động lại kho dữ liệu trống trước khi nạp mới
+            for (let mon in khoDuLieuMonHoc) { khoDuLieuMonHoc[mon] = []; }
 
-            if (!worksheet) {
-                alert("Lỗi: Không tìm thấy tab nào tên là 'Du_lieu_lich_day' trong file Excel của bạn!");
+            let coDuLieu = false;
+
+            // Quét qua toàn bộ các tab có trong file Excel tải lên
+            workbook.SheetNames.forEach(realSheetName => {
+                // Chuẩn hóa tên tab đầu vào: bỏ khoảng trắng, bỏ gạch dưới, chuyển về chữ thường[cite: 1]
+                let keyName = realSheetName.toLowerCase().replace(/[\s_]/g, '').trim();
+                let monChinhXac = banDoTenTab[keyName];
+
+                if (monChinhXac) {
+                    const worksheet = workbook.Sheets[realSheetName];
+                    const rawJson = XLSX.utils.sheet_to_json(worksheet);
+
+                    const parsedData = rawJson.map(row => ({
+                        khoi: row['Khối'] ? String(row['Khối']).trim() : "",
+                        tuan: row['Tuần'] ? parseInt(row['Tuần']) : "",
+                        tiet: row['Tiết PPCT'] ? String(row['Tiết PPCT']).trim() : "",
+                        tenBai: row['Tên Bài Dạy'] ? String(row['Tên Bài Dạy']).trim() : "",
+                        ghiChu: row['Ghi chú / Thiết bị'] ? String(row['Ghi chú / Thiết bị']).trim() : ""
+                    })).filter(item => item.tenBai !== "");
+
+                    if(parsedData.length > 0) {
+                        khoDuLieuMonHoc[monChinhXac] = parsedData;
+                        coDuLieu = true;
+                    }
+                }
+            });
+
+            if(!coDuLieu) {
+                alert("Lỗi: Không tìm thấy tên tab môn học nào hợp lệ theo chuẩn hệ thống (Ví dụ: Tin_hoc, Toan, Ngu_van...)!");
                 return;
             }
 
-            const rawJson = XLSX.utils.sheet_to_json(worksheet);
-
-            duLieuBaoGiang = rawJson.map(row => ({
-                khoi: row['Khối'] ? String(row['Khối']).trim() : "",
-                tuan: row['Tuần'] ? parseInt(row['Tuần']) : "",
-                tiet: row['Tiết PPCT'] ? String(row['Tiết PPCT']).trim() : "",
-                tenBai: row['Tên Bài Dạy'] ? String(row['Tên Bài Dạy']).trim() : "",
-                ghiChu: row['Ghi chú / Thiết bị'] ? String(row['Ghi chú / Thiết bị']).trim() : ""
-            })).filter(item => item.tenBai !== "");
-
-            // NÂNG CẤP: Lưu vĩnh viễn vào trình duyệt của máy
-            localStorage.setItem('duLieuBaoGiang_TinHoc', JSON.stringify(duLieuBaoGiang));
-            localStorage.setItem('tenFileBaoGiang_TinHoc', file.name);
+            // Lưu dữ liệu vào LocalStorage
+            localStorage.setItem('khoDuLieuMutiMon_GDPT2018', JSON.stringify(khoDuLieuMonHoc));
+            localStorage.setItem('tenFileMutiMon_GDPT2018', file.name);
             
             document.getElementById('file-name-display').innerHTML = `✅ Đã nạp thành công: <b>${file.name}</b>`;
-            document.getElementById('btn-clear').style.display = 'inline-flex'; // Hiện nút xóa
+            document.getElementById('btn-clear').style.display = 'inline-flex';
 
-            hienThiDuLieu(duLieuBaoGiang);
+            traCuu();
         };
         reader.readAsArrayBuffer(file);
     }
 
-    // Hàm xóa dữ liệu cũ để nạp học kỳ mới
+    // Hàm dọn sạch bộ nhớ của thiết bị
     function xoaDuLieuDaLuu() {
-        if(confirm("Bạn có chắc chắn muốn xóa lịch báo giảng hiện tại đã lưu trên máy không?")) {
-            localStorage.removeItem('duLieuBaoGiang_TinHoc');
-            localStorage.removeItem('tenFileBaoGiang_TinHoc');
-            duLieuBaoGiang = [];
+        if(confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu báo giảng đã lưu không?")) {
+            localStorage.removeItem('khoDuLieuMutiMon_GDPT2018');
+            localStorage.removeItem('tenFileMutiMon_GDPT2018');
+            for (let mon in khoDuLieuMonHoc) { khoDuLieuMonHoc[mon] = []; }
             document.getElementById('file-name-display').innerText = "Chưa có dữ liệu nào được nạp";
             document.getElementById('btn-clear').style.display = 'none';
             
             const tbody = document.getElementById('data-table-body');
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center" style="color: #7f8c8d; padding: 20px;">Dữ liệu cũ đã được xóa sạch. Vui lòng import file Excel mới!</td>
+                    <td colspan="5" class="text-center" style="color: #7f8c8d; padding: 20px;">Dữ liệu hệ thống đã được dọn sạch!</td>
                 </tr>
             `;
         }
     }
 
+    // In danh sách kết quả ra bảng
     function hienThiDuLieu(danhSach) {
         const tbody = document.getElementById('data-table-body');
         const noData = document.getElementById('no-data');
@@ -544,14 +631,26 @@
         });
     }
 
+    // Thực hiện tìm kiếm và lọc dữ liệu nâng cao
     function traCuu() {
-        if (duLieuBaoGiang.length === 0) return;
-
         const valueKhoi = document.getElementById('filter-khoi').value;
         const valueTuan = document.getElementById('filter-tuan').value;
         const valueSearch = document.getElementById('search-bai').value.toLowerCase().trim();
 
-        const ketQuaLoc = duLieuBaoGiang.filter(item => {
+        const nguonDuLieuMon = khoDuLieuMonHoc[monDangChon] || [];
+
+        if (nguonDuLieuMon.length === 0) {
+            const tbody = document.getElementById('data-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center" style="color: #94a3b8; padding: 30px;">Môn <b>[${monDangChon}]</b> hiện tại chưa có dữ liệu lịch dạy từ file Excel. Thầy vui lòng nạp file để xem lịch dạy.</td>
+                </tr>
+            `;
+            document.getElementById('no-data').style.display = 'none';
+            return;
+        }
+
+        const ketQuaLoc = nguonDuLieuMon.filter(item => {
             const matchKhoi = valueKhoi === "" || item.khoi === valueKhoi;
             const matchTuan = valueTuan === "" || item.tuan == valueTuan;
             const matchSearch = valueSearch === "" || item.tenBai.toLowerCase().includes(valueSearch) || item.ghiChu.toLowerCase().includes(valueSearch);
